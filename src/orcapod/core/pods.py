@@ -432,7 +432,7 @@ class FunctionPod(ActivatablePodBase):
                 values = execution_engine.submit_sync(
                     self.function,
                     fn_kwargs=input_dict,
-                    engine_opts=execution_engine_opts,
+                    **(execution_engine_opts or {}),
                 )
             else:
                 values = self.function(**input_dict)
@@ -490,7 +490,9 @@ class FunctionPod(ActivatablePodBase):
         if execution_engine is not None:
             # use the provided execution engine to run the function
             values = await execution_engine.submit_async(
-                self.function, fn_kwargs=input_dict, engine_opts=execution_engine_opts
+                self.function, 
+                fn_kwargs=input_dict, 
+                **(execution_engine_opts or {}) 
             )
         else:
             values = self.function(**input_dict)
