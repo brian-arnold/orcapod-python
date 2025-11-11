@@ -95,11 +95,18 @@ class PodNodeStream(StreamBase):
                     .drop_columns([constants.INPUT_PACKET_HASH])
                 )
 
-                existing = (
-                    all_results.filter(pc.is_valid(pc.field("_exists")))
-                    .drop_columns(target_entries.column_names)
-                    .drop_columns(["_exists"])
+                existing = all_results.filter(
+                    pc.is_valid(pc.field("_exists"))
+                ).drop_columns(
+                    [
+                        "_exists",
+                        constants.INPUT_PACKET_HASH,
+                        constants.PACKET_RECORD_ID,
+                        *self.input_stream.keys()[1],  # remove the input packet keys
+                    ]
+                    # TODO: look into NOT fetching back the record ID
                 )
+
                 renamed = [
                     c.removesuffix("_right") if c.endswith("_right") else c
                     for c in existing.column_names
