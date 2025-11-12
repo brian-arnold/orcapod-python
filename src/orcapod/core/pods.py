@@ -10,6 +10,8 @@ from orcapod.core.datagrams import (
     ArrowPacket,
     DictPacket,
 )
+from functools import wraps
+
 from orcapod.utils.git_utils import get_git_info_for_python_object
 from orcapod.core.kernels import KernelStream, TrackedKernelBase
 from orcapod.core.operators import Join
@@ -252,8 +254,13 @@ def function_pod(
     """
 
     def decorator(func: Callable) -> CallableWithPod:
+        
         if func.__name__ == "<lambda>":
             raise ValueError("Lambda functions cannot be used with function_pod")
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
 
         # Store the original function in the module for pickling purposes
         # and make sure to change the name of the function
@@ -267,9 +274,8 @@ def function_pod(
             label=label,
             **kwargs,
         )
-        setattr(func, "pod", pod)
-        return cast(CallableWithPod, func)
-
+        setattr(wrapper, "pod", pod)
+        return cast(CallableWithPod, wrapper)
     return decorator
 
 
