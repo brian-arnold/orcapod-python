@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 else:
     nx = LazyModule("networkx")
 
+logger = logging.getLogger(__name__)
+
 
 def synchronous_run(async_func, *args, **kwargs):
     """
@@ -43,7 +45,6 @@ def synchronous_run(async_func, *args, **kwargs):
         return asyncio.run(async_func(*args, **kwargs))
 
 
-logger = logging.getLogger(__name__)
 
 
 class GraphNode:
@@ -229,6 +230,16 @@ class Pipeline(GraphTracker):
             may implement more efficient graph traversal algorithms.
         """
         import networkx as nx
+        if run_async is True and (execution_engine is None or not execution_engine.supports_async):
+            raise ValueError(
+                "Cannot run asynchronously with an execution engine that does not support async."
+            )
+
+        # if set to None, determine based on execution engine capabilities
+        if run_async is None:
+            run_async = execution_engine is not None and execution_engine.supports_async
+
+        logger.info(f"Running pipeline with run_async={run_async}")
 
         for node in nx.topological_sort(self.graph):
             if run_async:
