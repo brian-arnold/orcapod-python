@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from ast import Not
 from collections.abc import Collection, Iterator
 from typing import TYPE_CHECKING, Any
 
